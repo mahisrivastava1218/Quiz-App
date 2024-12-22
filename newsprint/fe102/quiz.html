@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+</head>
+
+<body>
+    <div class="quiz-container">
+        <h1>Quiz App</h1>
+        <p id="question"></p>
+        <ul id="answer-list">
+            <!-- Answer options will be injected here -->
+        </ul>
+        <!-- <button id="submit">Submit</button> -->
+        <button id="next">Next</button>
+    </div>
+    <script>
+        // Sample data
+const questions = [
+    {
+    text: "Which language is primarily used for web app development?",
+    options: ["C#", "Python", "JavaScript", "Swift"],
+    correct: 2
+},
+{
+    text: "Which of the following is a relational database management system?",
+    options: ["Oracle", "Scala", "Perl", "Java"],
+    correct: 0
+},
+{
+    text: "In which language is memory management provided by JVM?",
+    options: ["Java", "C", "C++", "Python"],
+    correct: 0
+},
+{
+    text: "What does HTML stand for?",
+    options: ["Hyperlink and Text Markup Language", "High Technology Modern Language", "Hyper Text Markup Language", "Home Tool Markup Language"],
+    correct: 2
+},
+{
+    text: "Which of the following is not a valid variable name in Python?",
+    options: ["_myVar", "myVar2", "2myVar", "my_var"],
+    correct: 2
+},
+{
+    text: "Which of the following is not an object-oriented programming language?",
+    options: ["Java", "C#", "Scala", "C"],
+    correct: 3
+},
+{
+    text: "Which tool is used to ensure code quality in JavaScript?",
+    options: ["JSLint", "TypeScript", "Babel", "Webpack"],
+    correct: 0
+},
+{
+    text: "In which data structure, elements are added at one end and removed from the other?",
+    options: ["Array", "Stack", "Queue", "LinkedList"],
+    correct: 2
+},
+{
+    text: "What is the primary use of the Git command 'clone'?",
+    options: ["To stage changes", "To copy a repository", "To switch to a different branch", "To list all the files in a repository"],
+    correct: 1
+},
+{
+    text: "What does API stand for in the context of programming?",
+    options: ["Apple Pie Interface", "Application Programming Interface", "Advanced Peripheral Integration", "Application Process Integration"],
+    correct: 1
+}
+];
+
+document.body.style.backgroundColor ="rgb(151, 97, 196)";
+document.body.style.padding  = "50px";
+// let parentdivquiz = document.createElement("div");
+// parentdivquiz.style.backgroundColor = "green";
+// document.body.appendChild("parentdivquiz");
+
+const divquizs = document.getElementsByClassName("quiz-container");
+for(let divquiz of divquizs){
+    divquiz.style.width = "80%";
+    divquiz.style.maxWidth = "500px"
+    divquiz.style.backgroundColor = "white";
+    divquiz.style.margin = "50px auto 0";
+    divquiz.style.borderRadius = "10px"; 
+    divquiz.style.padding = "10px";
+}
+const h1Elements = document.getElementsByTagName("h1");
+for(let h1 of h1Elements){
+h1.style.color = "black";
+h1.style.fontWeight = "25px";
+h1.style.textAlign = "center";
+}
+const ulElements = document.getElementsByTagName("ul");
+
+for(let ul of ulElements){
+   ul.style.fontWeight = "500";
+}
+
+
+const button = document.getElementById("next");
+const buttonWrapper = document.createElement("div");
+buttonWrapper.classList.add("button-container");
+button.parentNode.insertBefore(buttonWrapper, button);
+buttonWrapper.appendChild(button);
+buttonWrapper.style.display ="flex";
+buttonWrapper.style.justifyContent = "center";
+
+const questionElement = document.getElementById("question");
+const answerListElement = document.getElementById('answer-list');
+const nextButton = document.getElementById("next");
+let currentQuestionIndex = 0;
+let score =0;
+let answerSelected = false;
+
+function startQuiz(){
+    currentQuestionIndex =0;
+    score=0;
+    nextButton.innerHTML = "Next";
+    nextButton.style.display = "block";
+    showQuestion();
+}
+
+function showQuestion(){
+    resetState();
+    let currentQuestion = questions[currentQuestionIndex];
+    let questionNo = currentQuestionIndex + 1;
+    questionElement.innerHTML = `${questionNo}.${currentQuestion.text}`;
+
+    currentQuestion.options.forEach((option,index) =>{
+        const listItem = document.createElement("li");
+        listItem.innerHTML = option;
+        // listItem.classList.add("li");
+        listItem.dataset.correct = index === currentQuestion.correct ? "true" : "false";
+        answerListElement.appendChild(listItem);
+        listItem.addEventListener("click",selectAnswer);
+    })
+}
+function resetState(){
+    // nextButton.style.display ="none";
+    while(answerListElement.firstChild){
+        answerListElement.removeChild(answerListElement.firstChild);
+    }
+    if(currentQuestionIndex === 0){
+        nextButton.innerHTML = "Submit";
+    }else{
+        nextButton.innerHTML = "Next";
+    }
+}
+
+function selectAnswer(e){
+    const selectlist = e.target;
+    const isCorrect = selectlist.dataset.correct === "true";
+    if(isCorrect){
+        selectlist.classList.add("correct");
+        selectlist.style.backgroundColor = "green";
+        score++;
+    }else{
+        selectlist.classList.add("incorrect");
+        selectlist.style.backgroundColor = "red";
+    }
+    Array.from(answerListElement.children).forEach((child) => {
+        if(child.dataset.correct === "true"){
+               // child.classList.add("correct");
+            child.style.backgroundColor = "green";
+        }
+      child.classList.add("disabled");
+      child.removeEventListener("click",selectAnswer);
+    });
+    nextButton.style.display = "block";
+    answerSelected = true;
+}
+
+function createAlert(message) {
+    // Create the alert div dynamically
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "alert"; // Add a class for styling
+    alertDiv.innerHTML = `
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <strong>${message}</strong>
+    `;
+    alertDiv.style.display = "block"; // Ensure the alert is visible
+    alertDiv.style.position = "fixed"; // Make it a popup
+    alertDiv.style.top = "20px";
+    alertDiv.style.left = "50%";
+    alertDiv.style.transform = "translateX(-50%)";
+    alertDiv.style.padding = "10px 20px";
+    alertDiv.style.backgroundColor = "#f44336"; // Red background
+    alertDiv.style.color = "white"; // White text
+    alertDiv.style.borderRadius = "5px";
+    alertDiv.style.zIndex = "1000";
+
+    // Append the alert to the body
+    document.body.appendChild(alertDiv);
+
+    // Auto-hide the alert after 5 seconds
+    setTimeout(() => {
+        alertDiv.style.display = "none";
+    }, 3000);
+}
+
+function showScore() {
+    resetState();
+    questionElement.innerHTML = `You scored ${score} out of ${questions.length}!`;
+    nextButton.innerHTML = "Play again";
+    nextButton.style.display = "block";
+}
+
+function handleNextButton() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+        showQuestion();
+    } else {
+        window.alert(`Quiz finished! Your score is: ${score}/${questions.length}`);
+        // alert("I am an alert box!");
+        // createAlert("Quiz Completed! Thanks for playing.");
+        // showScore(); // Show the final score after the alert
+    }
+}
+
+nextButton.addEventListener("click", ()=>{
+    if(!answerSelected){
+        createAlert("Please select an asnwer before proceeding");
+    }else{
+        if(currentQuestionIndex < questions.length){
+        handleNextButton();
+      }else{
+        startQuiz();
+      }
+    answerSelected = false;
+    }
+    // Write the JS code that you want to be executed each time the Next button is clicked.
+});
+
+const style = document.createElement('style');
+style.innerHTML = `
+    .disabled {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+    .disabled:hover {
+        cursor: default;
+    }
+    li:hover{
+    cursor: pointer;
+     background-color: rgb(245, 245, 245);
+    }
+`;
+document.head.appendChild(style);
+
+startQuiz();
+    </script>
+</body>
+</html>
